@@ -17,6 +17,9 @@ export interface IListSearchState {
   completeModalItemData: IResult;
   groupedItems: IGroupedItems[];
   columns: IColumn[];
+  subscriptionType: 'item' | 'category' | 'all';
+  subscriptionCategory: string;
+  notificationMessage: string;
 }
 
 export default interface IGroupedItems {

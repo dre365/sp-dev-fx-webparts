@@ -108,6 +108,11 @@ define([], function () {
     GeneralFilterInitialQueryTextValue: "Initial search value",
     WebPartTitlePlaceHolder: "Web part title",
     ModerAudienceEnabledTitle: "Modern audience enabled",
+    NotificationRegistered: "Notification saved",
+    NotificationsGroupName: "Notifications",
+    NotificationsTableUrlLabel: "Table service URL",
+    NotificationsTableNameLabel: "Table name",
+    NotificationsSasTokenLabel: "SAS token",
   ModernAudienceEnabledTitle: "Modern audience enabled",
   }
 });
