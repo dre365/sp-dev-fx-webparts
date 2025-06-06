@@ -22,6 +22,7 @@ import {
   ShimmeredDetailsList
 } from '@fluentui/react';
 import { SearchBox } from '@fluentui/react';
+import { ChoiceGroup, IChoiceGroupOption, TextField } from '@fluentui/react';
 import Pagination from "react-js-pagination";
 import { IReadonlyTheme } from '@microsoft/sp-component-base';
 import { IIconProps } from '@fluentui/react';
@@ -38,6 +39,7 @@ import StringUtils from '../services/Utils';
 import { Image, IImageProps, ImageFit } from '@fluentui/react';
 import { Link } from '@fluentui/react';
 import { FileTypeIcon, ApplicationType, IconType, ImageSize } from "@pnp/spfx-controls-react/lib/FileTypeIcon";
+import NotificationService, { SubscriptionType } from '../services/NotificationService';
 import IUserField from '../model/IUserField';
 import IUrlField from '../model/IUrlField';
 import { IFrameDialog } from "@pnp/spfx-controls-react/lib/IFrameDialog";
@@ -58,6 +60,7 @@ export default class IListdSearchWebPart extends React.Component<IListSearchProp
   private groups: IGroup[];
   private keymapQuerys: IMapQuery = {};
   private _graphService: GraphService;
+  private _notificationService: NotificationService;
 
   constructor(props: IListSearchProps) {
     super(props);
@@ -75,11 +78,15 @@ export default class IListdSearchWebPart extends React.Component<IListSearchProp
       selectedItem: null,
       completeModalItemData: null,
       columns: this.AddColumnsToDisplay(),
-      groupedItems: []
+      groupedItems: [],
+      subscriptionType: 'all',
+      subscriptionCategory: '',
+      notificationMessage: ''
     };
     this.GetJSXElementByType = this.GetJSXElementByType.bind(this);
     this._renderItemColumn = this._renderItemColumn.bind(this);
     this._graphService = new GraphService(this.props.Context);
+    this._notificationService = new NotificationService(this.props.Context);
 
   }
 
@@ -166,6 +173,16 @@ export default class IListdSearchWebPart extends React.Component<IListSearchProp
     this.props.detailListFieldsCollectionData.sort().map(column => {
       const mappingType = this.props.mappingFieldsCollectionData.find(e => e.TargetField === column.ColumnTitle);
       columns.push({ key: column.ColumnTitle, name: column.ColumnTitle, fieldName: column.ColumnTitle, minWidth: column.MinColumnWidth || 50, maxWidth: column.MaxColumnWidth, isResizable: true, data: mappingType ? mappingType.SPFieldType : (column.IsFileIcon ? SharePointType.FileIcon : SharePointType.Text), onColumnClick: this._onColumnClick, isIconOnly: column.IsFileIcon });
+    });
+
+    columns.push({
+      key: 'subscribe',
+      name: '',
+      fieldName: 'subscribe',
+      minWidth: 30,
+      maxWidth: 30,
+      isIconOnly: true,
+      onRender: (item) => (<IconButton iconProps={{ iconName: 'Ringer' }} title='Subscribe to item' onClick={() => { this.setState({ selectedItem: item, subscriptionType: 'item' }, () => this.subscribe()); }} />)
     });
 
     return columns;
@@ -1050,6 +1067,29 @@ export default class IListdSearchWebPart extends React.Component<IListSearchProp
     return items.slice(0).sort((a: T, b: T) => ((isSortedDescending ? a[key] < b[key] : a[key] > b[key]) ? 1 : -1));
   }
 
+  private async subscribe(): Promise<void> {
+    let value = '';
+    switch (this.state.subscriptionType) {
+      case 'item':
+        if (this.state.selectedItem) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          value = (this.state.selectedItem as any).Id || (this.state.selectedItem as any).ID;
+        }
+        break;
+      case 'category':
+        value = this.state.subscriptionCategory;
+        break;
+      case 'all':
+      default:
+        value = 'all';
+        break;
+    }
+
+    await this._notificationService.register(this.state.subscriptionType as SubscriptionType, value);
+    this.setState({ notificationMessage: strings.NotificationRegistered });
+  }
+
+
   private _onColumnClick = (ev: React.MouseEvent<HTMLElement>, column: IColumn): void => {
     const newColumns: IColumn[] = this.state.columns.slice();
     const currColumn: IColumn = newColumns.filter(currCol => column.key === currCol.key)[0];
@@ -1155,7 +1195,20 @@ export default class IListdSearchWebPart extends React.Component<IListSearchProp
                     }
                   </div>
                 </div>
-              </React.Fragment>}
+              </React.Fragment>
+              <div style={{ marginTop: '10px' }}>
+                <ChoiceGroup
+                  selectedKey={this.state.subscriptionType}
+                  options={[{ key: 'all', text: 'All items' }, { key: 'category', text: 'By category' }, { key: 'item', text: 'Selected item' }]}
+                  onChange={(_, opt) => this.setState({ subscriptionType: opt.key as SubscriptionType })}
+                />
+                {this.state.subscriptionType === 'category' &&
+                  <TextField label='Category value' value={this.state.subscriptionCategory} onChange={(_, val) => this.setState({ subscriptionCategory: val })} />}
+                <PrimaryButton style={{ marginTop: '8px' }} text='Subscribe' onClick={() => this.subscribe()} />
+                {this.state.notificationMessage &&
+                  <MessageBar messageBarType={MessageBarType.success}>{this.state.notificationMessage}</MessageBar>}
+              </div>
+              }
           </div>
         </div>
       </div >);

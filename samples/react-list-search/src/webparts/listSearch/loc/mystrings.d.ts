@@ -107,7 +107,12 @@ declare interface IListSearchWebPartStrings {
   GeneralFilterInitialQueryTextValue: string;
   WebPartTitlePlaceHolder: string;
   ModerAudienceEnabledTitle: string;
-ModernAudienceEnabledTitle: string;
+  ModernAudienceEnabledTitle: string;
+  NotificationRegistered: string;
+  NotificationsGroupName: string;
+  NotificationsTableUrlLabel: string;
+  NotificationsTableNameLabel: string;
+  NotificationsSasTokenLabel: string;
 }
 
 declare module 'ListSearchWebPartStrings' {
