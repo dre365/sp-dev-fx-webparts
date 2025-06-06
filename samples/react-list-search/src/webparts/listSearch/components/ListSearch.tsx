@@ -1195,7 +1195,6 @@ export default class IListdSearchWebPart extends React.Component<IListSearchProp
                     }
                   </div>
                 </div>
-              </React.Fragment>
               <div style={{ marginTop: '10px' }}>
                 <ChoiceGroup
                   selectedKey={this.state.subscriptionType}
@@ -1208,6 +1207,7 @@ export default class IListdSearchWebPart extends React.Component<IListSearchProp
                 {this.state.notificationMessage &&
                   <MessageBar messageBarType={MessageBarType.success}>{this.state.notificationMessage}</MessageBar>}
               </div>
+              </React.Fragment>
               }
           </div>
         </div>
